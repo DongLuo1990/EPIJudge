@@ -1,10 +1,10 @@
 package epi;
 
 import epi.test_framework.EpiTest;
-import epi.test_framework.GenericTestHandler;
+import epi.test_framework.GenericTest;
 import epi.test_framework.RandomSequenceChecker;
-import epi.test_framework.TestFailureException;
-import epi.test_framework.TestTimer;
+import epi.test_framework.TestFailure;
+import epi.test_framework.TimedExecutor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,17 +17,19 @@ public class OnlineSampling {
   public static List<Integer> onlineRandomSample(Iterator<Integer> stream,
                                                  int k) {
     // Implement this placeholder.
-    return null;
+    return Collections.emptyList();
   }
 
-  private static boolean onlineRandomSampleRunner(TestTimer timer,
-                                                  List<Integer> A, int k) {
+  private static boolean onlineRandomSampleRunner(TimedExecutor executor,
+                                                  List<Integer> A, int k)
+      throws Exception {
     List<List<Integer>> results = new ArrayList<>();
-    timer.start();
-    for (int i = 0; i < 1000000; ++i) {
-      results.add(onlineRandomSample(A.iterator(), k));
-    }
-    timer.stop();
+
+    executor.run(() -> {
+      for (int i = 0; i < 1000000; ++i) {
+        results.add(onlineRandomSample(A.iterator(), k));
+      }
+    });
 
     int totalPossibleOutcomes =
         RandomSequenceChecker.binomialCoefficient(A.size(), k);
@@ -48,15 +50,17 @@ public class OnlineSampling {
   }
 
   @EpiTest(testfile = "online_sampling.tsv")
-  public static void onlineRandomSampleWrapper(TestTimer timer,
+  public static void onlineRandomSampleWrapper(TimedExecutor executor,
                                                List<Integer> stream, int k)
-      throws TestFailureException {
+      throws Exception {
     RandomSequenceChecker.runFuncWithRetries(
-        () -> onlineRandomSampleRunner(timer, stream, k));
+        () -> onlineRandomSampleRunner(executor, stream, k));
   }
 
   public static void main(String[] args) {
-    GenericTestHandler.executeTestsByAnnotation(
-        new Object() {}.getClass().getEnclosingClass(), args);
+    System.exit(GenericTest
+                    .runFromAnnotations(
+                        args, new Object() {}.getClass().getEnclosingClass())
+                    .ordinal());
   }
 }

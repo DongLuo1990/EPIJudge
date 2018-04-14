@@ -2,10 +2,11 @@ package epi;
 
 import epi.test_framework.EpiTest;
 import epi.test_framework.EpiUserType;
-import epi.test_framework.GenericTestHandler;
-import epi.test_framework.TestTimer;
+import epi.test_framework.GenericTest;
+import epi.test_framework.TimedExecutor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class IntervalsUnion {
@@ -22,7 +23,7 @@ public class IntervalsUnion {
 
   public static List<Interval> unionOfIntervals(List<Interval> intervals) {
     // Implement this placeholder.
-    return null;
+    return Collections.emptyList();
   }
 
   @EpiUserType(
@@ -100,15 +101,14 @@ public class IntervalsUnion {
 
   @EpiTest(testfile = "intervals_union.tsv")
   public static List<FlatInterval>
-  unionIntervalWrapper(TestTimer timer, List<FlatInterval> intervals) {
+  unionIntervalWrapper(TimedExecutor executor, List<FlatInterval> intervals)
+      throws Exception {
     List<Interval> casted = new ArrayList<>(intervals.size());
     for (FlatInterval in : intervals) {
       casted.add(in.toInterval());
     }
 
-    timer.start();
-    List<Interval> result = unionOfIntervals(casted);
-    timer.stop();
+    List<Interval> result = executor.run(() -> unionOfIntervals(casted));
 
     intervals = new ArrayList<>(result.size());
     for (Interval i : result) {
@@ -118,7 +118,9 @@ public class IntervalsUnion {
   }
 
   public static void main(String[] args) {
-    GenericTestHandler.executeTestsByAnnotation(
-        new Object() {}.getClass().getEnclosingClass(), args);
+    System.exit(GenericTest
+                    .runFromAnnotations(
+                        args, new Object() {}.getClass().getEnclosingClass())
+                    .ordinal());
   }
 }

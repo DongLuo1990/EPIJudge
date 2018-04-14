@@ -1,11 +1,12 @@
 package epi;
 
 import epi.test_framework.EpiTest;
-import epi.test_framework.GenericTestHandler;
-import epi.test_framework.TestFailureException;
-import epi.test_framework.TestTimer;
+import epi.test_framework.GenericTest;
+import epi.test_framework.TestFailure;
+import epi.test_framework.TimedExecutor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TreeExterior {
@@ -13,13 +14,13 @@ public class TreeExterior {
   public static List<BinaryTreeNode<Integer>>
   exteriorBinaryTree(BinaryTreeNode<Integer> tree) {
     // Implement this placeholder.
-    return null;
+    return Collections.emptyList();
   }
 
   private static List<Integer> createOutputList(List<BinaryTreeNode<Integer>> L)
-      throws TestFailureException {
+      throws TestFailure {
     if (L.contains(null)) {
-      throw new TestFailureException("Resulting list contains null");
+      throw new TestFailure("Resulting list contains null");
     }
     List<Integer> output = new ArrayList<>();
     for (BinaryTreeNode<Integer> l : L) {
@@ -30,16 +31,17 @@ public class TreeExterior {
 
   @EpiTest(testfile = "tree_exterior.tsv")
   public static List<Integer>
-  exteriorBinaryTreeWrapper(TestTimer timer, BinaryTreeNode<Integer> tree)
-      throws TestFailureException {
-    timer.start();
-    List<BinaryTreeNode<Integer>> l = exteriorBinaryTree(tree);
-    timer.stop();
+  exteriorBinaryTreeWrapper(TimedExecutor executor,
+                            BinaryTreeNode<Integer> tree) throws Exception {
+    List<BinaryTreeNode<Integer>> l =
+        executor.run(() -> exteriorBinaryTree(tree));
     return createOutputList(l);
   }
 
   public static void main(String[] args) {
-    GenericTestHandler.executeTestsByAnnotation(
-        new Object() {}.getClass().getEnclosingClass(), args);
+    System.exit(GenericTest
+                    .runFromAnnotations(
+                        args, new Object() {}.getClass().getEnclosingClass())
+                    .ordinal());
   }
 }
